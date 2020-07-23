@@ -1,8 +1,22 @@
+import '@mdi/font/scss/materialdesignicons.scss';
 import Vue from 'vue'
-import App from './App.vue'
+import Buefy from 'buefy';
+import './scss/buefy-custom.scss';
+import VueMeta from 'vue-meta';
+import CQLogin from './CQLogin.vue';
 
-Vue.config.productionTip = false
+if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator){
+  // Inject service worker
+  navigator.serviceWorker.register('/service-worker.js');
+}
+
+Vue.config.productionTip = false;
+Vue.use(VueMeta);
+Vue.use(Buefy);
 
 new Vue({
-  render: h => h(App),
-}).$mount('#app')
+  render: r => r(CQLogin),
+  metaInfo: {
+    titleTemplate: 'Malverne Covid 19 Questionnaire%s'
+}
+}).$mount('#app');
