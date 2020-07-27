@@ -8,7 +8,7 @@
         <p class='info-text'>Please give your submission code to the security guard before entry</p>
     </div>
     <div class='survey-wrapper' v-else>
-        <b-steps size='is-small' :has-navigation='!isSubmitting && (stillNeedSurvey || Users.length > 1)' v-model="currentStep">
+        <b-steps size='is-small' :has-navigation='!isSubmitting && (stillNeedSurvey || Users.length > 1)' v-model="currentStep" :input="this.$emit('extend-cancel-timer')">
             <b-step-item v-if='InKioskMode && Users.length > 0 && Users[0].isvisitor' label="Visitor Information">
                 <div class='question-box'>
                     <b-field label="First Name">

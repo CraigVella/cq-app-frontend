@@ -53,10 +53,12 @@ class UserSystem {
             
             Axios.post(UserSystem_API, loginData).then((r)=>{
                 res(r.data);
-                if (!this.inKioskMode()) {
-                    Cookie.set('devicetoken',r.data.data.devicetoken, { expires: UserSystem_COOKIE_LIFE });
-                } else {
-                    Cookie.set('kiosk_temptoken', r.data.data.devicetoken);
+                if (r.data.data.devicetoken) {
+                    if (!this.inKioskMode()) {
+                        Cookie.set('devicetoken',r.data.data.devicetoken, { expires: UserSystem_COOKIE_LIFE });
+                    } else {
+                        Cookie.set('kiosk_temptoken', r.data.data.devicetoken);
+                    }
                 }
                 this.readCookieData();
             })
@@ -95,7 +97,8 @@ class UserSystem {
      }
 
      destroyKioskTempToken() {
-        if (this.inKioskMode()) {
+        this.readCookieData();
+        if (this.inKioskMode() && this.#CQData.kiosk_temptoken) {
             let destroyTokenReq = new FormData();
             destroyTokenReq.append('devicetoken', this.#CQData.kiosk_temptoken);
             destroyTokenReq.append('action', 'DESTROY_TOKEN');

@@ -5,6 +5,7 @@ import './scss/buefy-custom.scss';
 
 import VueMeta from 'vue-meta';
 import VueVisibility from 'vue-visibility-change';
+import VueTimers from 'vue-timers';
 
 import CQApp from './CQApp.vue';
 
@@ -17,6 +18,7 @@ Vue.config.productionTip = false;
 Vue.use(VueMeta);
 Vue.use(Buefy);
 Vue.use(VueVisibility);
+Vue.use(VueTimers);
 
 new Vue({
   render: r => r(CQApp),

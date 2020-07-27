@@ -3,7 +3,8 @@
         <div class='main-title'></div>
         <Survey ref='survey' v-on:enable-add-student='enableAddStudent' v-on:reload-user-list='reloadUserList' 
             v-bind:Users="users" v-bind:CurrentServerDate="currentServerDate"
-            v-bind:InKioskMode="inKioskMode" v-bind:KioskLocation='kioskLocation'></Survey>
+            v-bind:InKioskMode="inKioskMode" v-bind:KioskLocation='kioskLocation'
+            v-on:extend-cancel-timer='extendCancelTimer'></Survey>
         <b-modal :active.sync="showModalLogin" full-screen :can-cancel="false">
             <ModalUserAssociate v-bind:showCancel='showModalCancel' v-on:new-user="newUserAdded" 
                 v-on:cancel-user="cancelUser" v-bind:InKioskMode='inKioskMode' v-on:visitor-user='newVisitorUser'></ModalUserAssociate>
@@ -12,7 +13,7 @@
             <b-button icon-left="account" type='is-success' @click="addUserClick()">Add additional account</b-button>
         </div>
         <div class='add-user-button' v-if='inKioskMode'>
-            <b-button icon-left="cancel" type='is-danger' @click="cancelKioskSurvey()">Cancel Survey</b-button>
+            <b-button icon-left="cancel" type='is-danger' @click="cancelKioskSurvey()">{{cancelSurveyString}}</b-button>
         </div>
     </div>
 </template>
@@ -21,6 +22,9 @@
 import UserSystem from './lib/UserSystem.js';
 import ModalUserAssociate from './components/ModalUserAssociate.vue';
 import Survey from './components/Survey.vue';
+
+const CANCEL_SURVEY_TIME   = 30;
+const CANCEL_SURVEY_STRING = 'Close Survey';
 
 let usObj = new UserSystem();
 
@@ -34,7 +38,9 @@ export default {
             allowAddStudent: true,
             currentServerDate: '',
             inKioskMode: false,
-            kioskLocation: 'NO-LOCATION-SET'
+            kioskLocation: 'NO-LOCATION-SET',
+            cancelSurveyString: 'Cancel Survey',
+            cancelSurveyTimer: CANCEL_SURVEY_TIME
         }
     },
     mounted() {
@@ -48,12 +54,34 @@ export default {
             });
         }
     },
+    timers: {
+        cancelSurveyTick: {
+            time: 1000,
+            autostart: false,
+            repeat: true,
+            immediate: true
+        }
+    },
     methods: {
+        extendCancelTimer() {
+            this.cancelSurveyTimer = CANCEL_SURVEY_TIME;
+        },
+        cancelSurveyTick() {
+            this.cancelSurveyString = CANCEL_SURVEY_STRING + ' : ' + this.cancelSurveyTimer;
+            --this.cancelSurveyTimer;
+            if (this.cancelSurveyTimer < 0) {
+                this.$timer.stop('cancelSurveyTick');
+                this.cancelKioskSurvey();
+            }
+        },
         cancelKioskSurvey() {
             this.users = [];
             this.$refs.survey.clearKiosk();
             usObj.destroyKioskTempToken();
             this.checkIfShowAddUser();
+            this.$timer.stop('cancelSurveyTick');
+            this.cancelSurveyTimer = CANCEL_SURVEY_TIME;
+            this.cancelSurveyString = CANCEL_SURVEY_STRING;
         },
         reloadUserList() {
             return usObj.getUserList().then((r) => {
@@ -78,6 +106,9 @@ export default {
         newUserAdded() {
             this.reloadUserList().then(() => {
                 this.showModalLogin = false;
+                if (this.inKioskMode) {
+                    this.$timer.start('cancelSurveyTick');
+                }
             });
         },
         newVisitorUser() {
@@ -96,6 +127,7 @@ export default {
             ];
             this.$refs.survey.clearKiosk();
             this.showModalLogin = false;
+            this.$timer.start('cancelSurveyTick');
         },
         addUserClick() {
             this.$buefy.dialog.confirm({

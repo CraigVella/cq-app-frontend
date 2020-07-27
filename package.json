@@ -18,6 +18,7 @@
     "sass-loader": "^9.0.2",
     "vue": "^2.6.11",
     "vue-meta": "^2.4.0",
+    "vue-timers": "^2.0.4",
     "vue-visibility-change": "^1.2.1"
   },
   "devDependencies": {
