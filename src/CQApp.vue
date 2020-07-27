@@ -52,6 +52,7 @@ export default {
         cancelKioskSurvey() {
             this.users = [];
             this.$refs.survey.clearKiosk();
+            usObj.destroyKioskTempToken();
             this.checkIfShowAddUser();
         },
         reloadUserList() {

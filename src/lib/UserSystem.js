@@ -8,7 +8,8 @@ class UserSystem {
     #CQData = {
         devicetoken: null,
         mode: 'standalone',
-        location: 'NO-LOCATION-SET'
+        location: 'NO-LOCATION-SET',
+        kiosk_temptoken: null
     };
 
      constructor() {
@@ -20,6 +21,7 @@ class UserSystem {
         this.#CQData.location = Cookie.get('location') || this.#CQData.location;
         if (this.#CQData.mode.toUpperCase() === 'KIOSK') {
             Cookie.remove('devicetoken');
+            this.#CQData.kiosk_temptoken = Cookie.get('kiosk_temptoken');
         } else if(this.#CQData.mode.toUpperCase() === 'STANDALONE') {
             this.#CQData.devicetoken = Cookie.get('devicetoken');
             if (this.#CQData.devicetoken !== undefined && this.#CQData.devicetoken !== null) {
@@ -51,7 +53,11 @@ class UserSystem {
             
             Axios.post(UserSystem_API, loginData).then((r)=>{
                 res(r.data);
-                Cookie.set('devicetoken',r.data.data.devicetoken, { expires: UserSystem_COOKIE_LIFE });
+                if (!this.inKioskMode()) {
+                    Cookie.set('devicetoken',r.data.data.devicetoken, { expires: UserSystem_COOKIE_LIFE });
+                } else {
+                    Cookie.set('kiosk_temptoken', r.data.data.devicetoken);
+                }
                 this.readCookieData();
             })
         });
@@ -59,18 +65,43 @@ class UserSystem {
 
      getUserList() {
         this.readCookieData();
-        return new Promise((res) => {
-            if (this.#CQData.devicetoken === undefined) {
-                res(null);
-            } else {
-                let getUserData = new FormData();
-                getUserData.append('devicetoken', this.#CQData.devicetoken);
-                getUserData.append('action', 'GET_USERS');
-                Axios.post(UserSystem_API, getUserData).then((r) => {
-                    res(r.data);
-                });
-            }
-        });
+        if (this.inKioskMode()) {
+            return new Promise((res) => {
+                if (this.#CQData.kiosk_temptoken === undefined) {
+                    res(null);
+                } else {
+                    let getUserData = new FormData();
+                    getUserData.append('devicetoken', this.#CQData.kiosk_temptoken);
+                    getUserData.append('action', 'GET_USERS');
+                    Axios.post(UserSystem_API, getUserData).then((r) => {
+                        res(r.data);
+                    });
+                }
+            });
+        } else {
+            return new Promise((res) => {
+                if (this.#CQData.devicetoken === undefined) {
+                    res(null);
+                } else {
+                    let getUserData = new FormData();
+                    getUserData.append('devicetoken', this.#CQData.devicetoken);
+                    getUserData.append('action', 'GET_USERS');
+                    Axios.post(UserSystem_API, getUserData).then((r) => {
+                        res(r.data);
+                    });
+                }
+            });
+        }
+     }
+
+     destroyKioskTempToken() {
+        if (this.inKioskMode()) {
+            let destroyTokenReq = new FormData();
+            destroyTokenReq.append('devicetoken', this.#CQData.kiosk_temptoken);
+            destroyTokenReq.append('action', 'DESTROY_TOKEN');
+            Axios.post(UserSystem_API, destroyTokenReq);
+            Cookie.remove('kiosk_temptoken');
+        }
      }
 
      submitSurvey(usersArray) {
@@ -87,6 +118,9 @@ class UserSystem {
                // The submission is a visitor
                userResponseData.append('action', 'VISITOR_SURVEY');
                userResponseData.append('kloc',this.getKioskLocation());
+           } else {
+                userResponseData.append('devicetoken', this.#CQData.kiosk_temptoken);
+                userResponseData.append('action', 'SUBMIT_SURVEY');
            }
         } else {
            userResponseData.append('devicetoken', this.#CQData.devicetoken);

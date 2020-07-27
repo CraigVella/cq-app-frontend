@@ -127,7 +127,7 @@ export default {
                             hasIcon: true
                     })
                 }
-                if (this.InKioskMode) {
+                if (this.InKioskMode && this.Users[0].isvisitor) {
                     this.kioskSubmissionResult = r.data;
                     this.kioskSubmissionComplete = true;
                 } else {
