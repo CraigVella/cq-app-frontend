@@ -1,6 +1,27 @@
 <template>
-    <div class='survey-wrapper'>
+    <div class='survey-wrapper' v-if='InKioskMode && kioskSubmissionComplete'>
+        <div class='complete-box box kiosk-box' v-bind:class="{'has-failed': !kioskSubmissionResult.passed, 'has-passed': kioskSubmissionResult.passed}">
+            <div class='complete-name'>{{kioskSubmissionResult.displayname}}</div>
+            <div class='complete-name'>Submission Code: #{{kioskSubmissionResult.id}}</div>
+            <div class='complete-date'>{{kioskSubmissionResult.date}}</div>
+        </div>
+        <p class='info-text'>Please give your submission code to the security guard before entry</p>
+    </div>
+    <div class='survey-wrapper' v-else>
         <b-steps size='is-small' :has-navigation='!isSubmitting && (stillNeedSurvey || Users.length > 1)' v-model="currentStep">
+            <b-step-item v-if='InKioskMode && Users.length > 0 && Users[0].isvisitor' label="Visitor Information">
+                <div class='question-box'>
+                    <b-field label="First Name">
+                        <b-input required v-model='Users[0].firstname' icon='form-textbox'></b-input>
+                    </b-field>
+                    <b-field label="Last Name">
+                        <b-input required v-model='Users[0].lastname' icon='form-textbox'></b-input>
+                    </b-field>
+                    <b-field label="E-Mail Address">
+                        <b-input v-model='Users[0].email' icon='email'></b-input>
+                    </b-field>
+                </div>
+            </b-step-item>
             <b-step-item v-for='(user, ui) in Users' :key='ui' :label='user.displayname'>
                 <div class='question-box' v-if='!user.hascompletedtoday'>
                     <div v-for="(question, i) in questions" :key='i' class='question'>
@@ -48,7 +69,9 @@ export default {
     name: "Survey",
     props: {
         Users: Array,
-        CurrentServerDate: String
+        CurrentServerDate: String,
+        InKioskMode: Boolean,
+        KioskLocation: String
     },
     data() {
         return {
@@ -58,11 +81,18 @@ export default {
                 { question: "Have you experienced any symptoms of COVID-19 in the past 14 days?" }
             ],
             isSubmitting: false,
-            currentStep: 0
+            currentStep: 0,
+            kioskSubmissionComplete: false,
+            kioskSubmissionResult: {}
         }
     },
     computed: {
         submitAvailable() {
+            if (this.InKioskMode && this.Users[0].isvisitor) {
+                if (this.Users[0].firstname.trim() === '' || this.Users[0].lastname.trim() === '') {
+                    return false;
+                }
+            }
             for (let x = 0; x < this.Users.length; ++x) {
                 for (let y = 0; y < this.Users[x].questionresponses.length; ++y) {
                     if (this.Users[x].questionresponses[y] === null && !this.Users[x].hascompletedtoday) {
@@ -97,11 +127,21 @@ export default {
                             hasIcon: true
                     })
                 }
-                this.$emit('reload-user-list');
+                if (this.InKioskMode) {
+                    this.kioskSubmissionResult = r.data;
+                    this.kioskSubmissionComplete = true;
+                } else {
+                    this.$emit('reload-user-list');
+                }
                 this.$emit('enable-add-student', true);
                 this.isSubmitting = false;
                 this.currentStep = 0;
             });
+        },
+        clearKiosk() {
+            this.kioskSubmissionComplete = false;
+            this.kioskSubmissionResult = {};
+            this.currentStep = 0;
         }
     },
     components: {
@@ -193,5 +233,14 @@ export default {
     width: 100%;
     text-align: center;
     font-size: 6vw;
+}
+
+.kiosk-box {
+    margin: 15px 15px 0px 15px;
+}
+
+.info-text {
+    text-align: center;
+    color: red;
 }
 </style>

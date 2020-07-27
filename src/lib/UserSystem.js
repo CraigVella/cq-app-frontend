@@ -6,17 +6,39 @@ const UserSystem_COOKIE_LIFE = 7;
 
 class UserSystem {
     #CQData = {
-        devicetoken: null
+        devicetoken: null,
+        mode: 'standalone',
+        location: 'NO-LOCATION-SET'
     };
+
      constructor() {
          this.readCookieData();
      }
 
      readCookieData() {
-        this.#CQData.devicetoken = Cookie.get('devicetoken');
-        if (this.#CQData.devicetoken !== undefined && this.#CQData.devicetoken !== null) {
-            Cookie.set('devicetoken', this.#CQData.devicetoken, { expires: UserSystem_COOKIE_LIFE }); // Refresh the cookie when it's read
+        this.#CQData.mode = Cookie.get('mode') || this.#CQData.mode;
+        this.#CQData.location = Cookie.get('location') || this.#CQData.location;
+        if (this.#CQData.mode.toUpperCase() === 'KIOSK') {
+            Cookie.remove('devicetoken');
+        } else if(this.#CQData.mode.toUpperCase() === 'STANDALONE') {
+            this.#CQData.devicetoken = Cookie.get('devicetoken');
+            if (this.#CQData.devicetoken !== undefined && this.#CQData.devicetoken !== null) {
+                Cookie.set('devicetoken', this.#CQData.devicetoken, { expires: UserSystem_COOKIE_LIFE }); // Refresh the cookie when it's read
+            }
         }
+     }
+
+     inKioskMode() {
+         return this.#CQData.mode.toUpperCase() === 'KIOSK';
+     }
+
+     getKioskLocation() {
+         return this.#CQData.location;
+     }
+
+     getCookieData() {
+         this.readCookieData();
+         return Object.assign({},this.#CQData);
      }
 
      loginUser(username, password) {
@@ -44,7 +66,6 @@ class UserSystem {
                 let getUserData = new FormData();
                 getUserData.append('devicetoken', this.#CQData.devicetoken);
                 getUserData.append('action', 'GET_USERS');
-
                 Axios.post(UserSystem_API, getUserData).then((r) => {
                     res(r.data);
                 });
@@ -53,21 +74,29 @@ class UserSystem {
      }
 
      submitSurvey(usersArray) {
-         let userData = [];
-         usersArray.forEach(user => {
-             if (!user.hascompletedtoday) {
-                 userData.push(user);
-             }
-         });
-         return new Promise((res) => {
-            let userResponseData = new FormData();
-            userResponseData.append('devicetoken', this.#CQData.devicetoken);
-            userResponseData.append('userdata', JSON.stringify(userData));
-            userResponseData.append('action', 'SUBMIT_SURVEY');
+        let userData = [];
+        usersArray.forEach(user => {
+            if (!user.hascompletedtoday) {
+                userData.push(user);
+            }
+        });
+        let userResponseData = new FormData();
+        userResponseData.append('userdata', JSON.stringify(userData));
+        if (this.inKioskMode()) {
+           if ('isvisitor' in userData[0]) {
+               // The submission is a visitor
+               userResponseData.append('action', 'VISITOR_SURVEY');
+               userResponseData.append('kloc',this.getKioskLocation());
+           }
+        } else {
+           userResponseData.append('devicetoken', this.#CQData.devicetoken);
+           userResponseData.append('action', 'SUBMIT_SURVEY');
+        }
+        return new Promise((res) => {
             Axios.post(UserSystem_API, userResponseData).then((r) => {
                 res(r.data);
             });
-         });
+        });
      }
 }
 

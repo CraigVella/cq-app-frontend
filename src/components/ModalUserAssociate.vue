@@ -3,7 +3,8 @@
         <div class="mufsd-logo"></div>
         <div class="logon-box box">
             <h1>Covid-19 Questionnaire</h1>
-            <p class='info-text'>Add an account to this device</p>
+            <p class='info-text' v-if='!InKioskMode'>Add an account to this device</p>
+            <p class='info-text' v-else>Login with your district credentials</p>
             <b-field :type="loginError ? 'is-danger' : ''">
                 <b-input placeholder="email@malverne.k12.ny.us" expanded icon="email" v-model="email"></b-input>
             </b-field>
@@ -14,11 +15,17 @@
                 <b-field class='login-button'>
                     <b-button :loading="isLoading" type='is-primary' @click="loginUser()">Login</b-button>
                 </b-field>
-                <b-field class='login-button'>
-                    <b-button v-if="showCancel" type='is-danger' @click="cancel()">Cancel</b-button>
+                <b-field v-if="showCancel" class='login-button'>
+                    <b-button type='is-danger' @click="cancel()">Cancel</b-button>
                 </b-field>
             </b-field>
             <p class='error' v-if="loginError">The username or password was incorrect</p>
+            <div v-if='InKioskMode' class='kiosk-visitor'>
+                <p class='info-text info-visit-text'>- Or -</p>
+                <b-field class='visitor-button'>
+                    <b-button icon-left="account" size="is-medium" type='is-success' @click='visitor()'>I am a Visitor</b-button>
+                </b-field>
+            </div>
         </div>
         <div class="covid-image"></div>
     </div>
@@ -30,7 +37,8 @@ import UserSystem from '../lib/UserSystem.js';
 export default {
     name: "ModalUserAssociate",
     props: {
-        showCancel: Boolean
+        showCancel: Boolean,
+        InKioskMode: Boolean
     },
     data() {
         return {
@@ -56,6 +64,9 @@ export default {
         },
         cancel() {
             this.$emit('cancel-user');
+        },
+        visitor() {
+            this.$emit('visitor-user');
         }
     }
 }
@@ -115,6 +126,10 @@ h1 {
     padding-bottom: 5px;
 }
 
+.info-visit-text {
+    font-weight: bold;
+}
+
 .login-button {
     text-align: center;
 }
@@ -126,7 +141,9 @@ h1 {
     text-align: center;
 }
 
-.center-group {
-
+.visitor-button {
+    text-align: center;
+    padding-top: 5px;
 }
+
 </style>

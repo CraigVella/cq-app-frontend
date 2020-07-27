@@ -1,12 +1,18 @@
 <template>
     <div class="main-wrapper" v-visibility-change="reloadUserList">
         <div class='main-title'></div>
-        <Survey v-on:enable-add-student='enableAddStudent' v-on:reload-user-list='reloadUserList' v-bind:Users="users" v-bind:CurrentServerDate="currentServerDate"></Survey>
+        <Survey ref='survey' v-on:enable-add-student='enableAddStudent' v-on:reload-user-list='reloadUserList' 
+            v-bind:Users="users" v-bind:CurrentServerDate="currentServerDate"
+            v-bind:InKioskMode="inKioskMode" v-bind:KioskLocation='kioskLocation'></Survey>
         <b-modal :active.sync="showModalLogin" full-screen :can-cancel="false">
-            <ModalUserAssociate v-bind:showCancel='showModalCancel' v-on:new-user="newUserAdded" v-on:cancel-user="cancelUser"></ModalUserAssociate>
+            <ModalUserAssociate v-bind:showCancel='showModalCancel' v-on:new-user="newUserAdded" 
+                v-on:cancel-user="cancelUser" v-bind:InKioskMode='inKioskMode' v-on:visitor-user='newVisitorUser'></ModalUserAssociate>
         </b-modal>
-        <div class='add-user-button' v-if='allowAddStudent'>
+        <div class='add-user-button' v-if='allowAddStudent && !inKioskMode'>
             <b-button icon-left="account" type='is-success' @click="addUserClick()">Add additional account</b-button>
+        </div>
+        <div class='add-user-button' v-if='inKioskMode'>
+            <b-button icon-left="cancel" type='is-danger' @click="cancelKioskSurvey()">Cancel Survey</b-button>
         </div>
     </div>
 </template>
@@ -26,30 +32,69 @@ export default {
             showModalLogin: false,
             showModalCancel: false,
             allowAddStudent: true,
-            currentServerDate: ''
+            currentServerDate: '',
+            inKioskMode: false,
+            kioskLocation: 'NO-LOCATION-SET'
         }
     },
     mounted() {
-        this.reloadUserList().then(() => {
-            if (!this.users.length) {
-                this.showModalLogin = true;
-                this.showModalCancel = false;
-            }
-        });
+        if (usObj.inKioskMode()) {
+            this.inKioskMode = true;
+            this.kioskLocation = usObj.getKioskLocation();
+            this.checkIfShowAddUser();
+        } else {
+            this.reloadUserList().then(() => {
+                this.checkIfShowAddUser();
+            });
+        }
     },
     methods: {
+        cancelKioskSurvey() {
+            this.users = [];
+            this.$refs.survey.clearKiosk();
+            this.checkIfShowAddUser();
+        },
         reloadUserList() {
             return usObj.getUserList().then((r) => {
                 if (r && !r.api.status.error) {
                     this.users = r.data.users;
                     this.currentServerDate = r.api.date;
+                } else {
+                    if (r) {
+                        this.currentServerDate = r.api.date;
+                    }
+                    this.users = [];
+                    this.checkIfShowAddUser();
                 }
             });
+        },
+        checkIfShowAddUser() {
+            if (!this.users.length) {
+                this.showModalLogin = true;
+                this.showModalCancel = false;
+            }
         },
         newUserAdded() {
             this.reloadUserList().then(() => {
                 this.showModalLogin = false;
             });
+        },
+        newVisitorUser() {
+            this.users = [
+                {
+                    isvisitor: true,
+                    firstname: '',
+                    lastname: '',
+                    email: '',
+                    displayname: 'Visitor Questionnaire',
+                    hascompletedtoday: false,
+                    questionresponses: [
+                        null,null,null
+                    ]
+                }
+            ];
+            this.$refs.survey.clearKiosk();
+            this.showModalLogin = false;
         },
         addUserClick() {
             this.$buefy.dialog.confirm({
