@@ -4,6 +4,7 @@ import Buefy from 'buefy';
 import './scss/buefy-custom.scss';
 
 import VueMeta from 'vue-meta';
+import VueVisibility from 'vue-visibility-change';
 
 import CQApp from './CQApp.vue';
 
@@ -15,6 +16,7 @@ if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator){
 Vue.config.productionTip = false;
 Vue.use(VueMeta);
 Vue.use(Buefy);
+Vue.use(VueVisibility);
 
 new Vue({
   render: r => r(CQApp),

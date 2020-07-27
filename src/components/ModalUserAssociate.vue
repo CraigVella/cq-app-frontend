@@ -10,8 +10,13 @@
             <b-field :type="loginError ? 'is-danger' : ''">
                 <b-input type='password' placeholder="Password" expanded icon="lock-question" v-model="password"></b-input>
             </b-field>
-            <b-field class='login-button'>
-                <b-button :loading="isLoading" type='is-primary' @click="loginUser()">Login</b-button>
+            <b-field grouped position="is-centered">
+                <b-field class='login-button'>
+                    <b-button :loading="isLoading" type='is-primary' @click="loginUser()">Login</b-button>
+                </b-field>
+                <b-field class='login-button'>
+                    <b-button v-if="showCancel" type='is-danger' @click="cancel()">Cancel</b-button>
+                </b-field>
             </b-field>
             <p class='error' v-if="loginError">The username or password was incorrect</p>
         </div>
@@ -24,6 +29,9 @@ import UserSystem from '../lib/UserSystem.js';
 
 export default {
     name: "ModalUserAssociate",
+    props: {
+        showCancel: Boolean
+    },
     data() {
         return {
             loginError: false,
@@ -45,6 +53,9 @@ export default {
                     this.$emit('new-user');
                 }
             });
+        },
+        cancel() {
+            this.$emit('cancel-user');
         }
     }
 }
@@ -113,5 +124,9 @@ h1 {
     font-size: .8em;
     font-weight: bold;
     text-align: center;
+}
+
+.center-group {
+
 }
 </style>

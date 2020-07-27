@@ -36,6 +36,7 @@ class UserSystem {
      }
 
      getUserList() {
+        this.readCookieData();
         return new Promise((res) => {
             if (this.#CQData.devicetoken === undefined) {
                 res(null);
@@ -49,6 +50,24 @@ class UserSystem {
                 });
             }
         });
+     }
+
+     submitSurvey(usersArray) {
+         let userData = [];
+         usersArray.forEach(user => {
+             if (!user.hascompletedtoday) {
+                 userData.push(user);
+             }
+         });
+         return new Promise((res) => {
+            let userResponseData = new FormData();
+            userResponseData.append('devicetoken', this.#CQData.devicetoken);
+            userResponseData.append('userdata', JSON.stringify(userData));
+            userResponseData.append('action', 'SUBMIT_SURVEY');
+            Axios.post(UserSystem_API, userResponseData).then((r) => {
+                res(r.data);
+            });
+         });
      }
 }
 

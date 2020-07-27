@@ -1,6 +1,7 @@
 const SWPrecache = require('sw-precache-webpack-plugin');
 
 module.exports = {
+    productionSourceMap: false,
     configureWebpack: () => {
         if (process.env.NODE_ENV === 'production') {
             return {

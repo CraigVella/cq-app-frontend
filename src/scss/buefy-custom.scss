@@ -26,6 +26,10 @@ $link: $primary;
 $link-invert: $primary-invert;
 $link-focus-border: $primary;
 
+.step-navigation {
+    text-align: center;
+}
+
 // Import Bulma and Buefy styles
 @import "~bulma";
 @import "~buefy/src/scss/buefy";
