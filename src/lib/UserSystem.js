@@ -22,12 +22,18 @@ class UserSystem {
         if (this.#CQData.mode.toUpperCase() === 'KIOSK') {
             Cookie.remove('devicetoken');
             this.#CQData.kiosk_temptoken = Cookie.get('kiosk_temptoken');
+        } else if (this.#CQData.mode.toUpperCase() === 'SCAN') {
+            Cookie.remove('devicetoken');
         } else if(this.#CQData.mode.toUpperCase() === 'STANDALONE') {
             this.#CQData.devicetoken = Cookie.get('devicetoken');
             if (this.#CQData.devicetoken !== undefined && this.#CQData.devicetoken !== null) {
                 Cookie.set('devicetoken', this.#CQData.devicetoken, { expires: UserSystem_COOKIE_LIFE }); // Refresh the cookie when it's read
             }
         }
+     }
+
+     inScanMode() {
+         return this.#CQData.mode.toUpperCase() === 'SCAN';
      }
 
      inKioskMode() {
@@ -134,6 +140,18 @@ class UserSystem {
                 res(r.data);
             });
         });
+     }
+
+     getResult(uid, isVisitor) {
+         let resultQuery = new FormData();
+         resultQuery.append('action', 'GET_RESULT');
+         resultQuery.append('uid', uid);
+         resultQuery.append('visitor', isVisitor);
+         return new Promise((res) => {
+            Axios.post(UserSystem_API, resultQuery).then((r) =>{
+                res(r.data);
+            });
+         });
      }
 }
 

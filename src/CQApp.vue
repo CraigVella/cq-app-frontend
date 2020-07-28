@@ -1,5 +1,5 @@
 <template>
-    <div class="main-wrapper" v-visibility-change="reloadUserList">
+    <div v-if='!inScanMode' class="main-wrapper" v-visibility-change="reloadUserList">
         <div class='main-title'></div>
         <Survey ref='survey' v-on:enable-add-student='enableAddStudent' v-on:reload-user-list='reloadUserList' 
             v-bind:Users="users" v-bind:CurrentServerDate="currentServerDate"
@@ -16,12 +16,14 @@
             <b-button icon-left="cancel" type='is-danger' @click="cancelKioskSurvey()">{{cancelSurveyString}}</b-button>
         </div>
     </div>
+    <Scanner v-else></Scanner>
 </template>
 
 <script>
 import UserSystem from './lib/UserSystem.js';
 import ModalUserAssociate from './components/ModalUserAssociate.vue';
 import Survey from './components/Survey.vue';
+import Scanner from './components/Scanner.vue';
 
 const CANCEL_SURVEY_TIME   = 30;
 const CANCEL_SURVEY_STRING = 'Close Survey';
@@ -38,6 +40,7 @@ export default {
             allowAddStudent: true,
             currentServerDate: '',
             inKioskMode: false,
+            inScanMode: false,
             kioskLocation: 'NO-LOCATION-SET',
             cancelSurveyString: 'Cancel Survey',
             cancelSurveyTimer: CANCEL_SURVEY_TIME
@@ -48,6 +51,8 @@ export default {
             this.inKioskMode = true;
             this.kioskLocation = usObj.getKioskLocation();
             this.checkIfShowAddUser();
+        } else if (usObj.inScanMode()) {
+            this.inScanMode = true;
         } else {
             this.reloadUserList().then(() => {
                 this.checkIfShowAddUser();
@@ -149,7 +154,7 @@ export default {
             this.allowAddStudent = enable;
         }
     },
-    components: { ModalUserAssociate, Survey }
+    components: { ModalUserAssociate, Survey, Scanner }
 }
 </script>
 
