@@ -163,10 +163,12 @@ body {
     font-family: Arial;
     color: black;
 }
+
 .main-wrapper {
     min-height: 100vh;
     padding-top: 10px;
 }
+
 .main-title {
     background-image: url('./assets/title.png');
     background-repeat: no-repeat;
