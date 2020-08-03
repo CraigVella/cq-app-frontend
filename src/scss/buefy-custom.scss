@@ -30,6 +30,16 @@ $link-focus-border: $primary;
     text-align: center;
 }
 
+.pagination-next::before {
+    content: "Next";
+    width: 100px;
+}
+
+.pagination-previous::after {
+    content: "Previous";
+    width: 100px;
+}
+
 // Import Bulma and Buefy styles
 @import "~bulma";
 @import "~buefy/src/scss/buefy";

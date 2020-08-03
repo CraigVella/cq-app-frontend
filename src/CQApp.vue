@@ -181,7 +181,7 @@ body {
     height: 50px;
     text-align: right;
     padding-right: 15px;
-    padding-top: 15px;
+    padding-top: 60px;
     margin-bottom: 10px;
 }
 </style>
