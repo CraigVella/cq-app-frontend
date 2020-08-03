@@ -182,6 +182,6 @@ body {
     text-align: right;
     padding-right: 15px;
     padding-top: 60px;
-    margin-bottom: 10px;
+    padding-bottom: 60px;
 }
 </style>
