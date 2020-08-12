@@ -47,7 +47,7 @@
                 </div>
                 <div class='complete-box box' v-bind:class="{ 'has-failed': (user.hascompletedtoday && !user.passed), 'has-passed': (user.hascompletedtoday && user.passed) }" v-else>
                     <div class='complete-name'>{{user.displayname}}</div>
-                    <QRCode :value='user.uid' class='qr-code'></QRCode>
+                    <VueQrcode :value='user.uid' class='qr-code' :options="{ width: 256, height: 256 }"></VueQrcode>
                     <div class='complete-date'>{{CurrentServerDate}}</div>
                 </div>
             </b-step-item>
@@ -63,7 +63,7 @@
 
 <script>
 import UserSystem from '../lib/UserSystem.js';
-import QRCode from 'qrcode.vue';
+import VueQrcode from '@chenfengyuan/vue-qrcode';
 
 export default {
     name: "Survey",
@@ -145,7 +145,7 @@ export default {
         }
     },
     components: {
-        QRCode
+        VueQrcode
     }
 }
 </script>
@@ -219,6 +219,8 @@ export default {
     display: flex;
     flex-flow: column nowrap;
     padding: 5px;
+    width: 256px;
+    height: 256px;
 }
 
 .complete-name {
