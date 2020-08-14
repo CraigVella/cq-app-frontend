@@ -8,7 +8,6 @@ import VueVisibility from 'vue-visibility-change';
 import VueTimers from 'vue-timers';
 
 import CQApp from './CQApp.vue';
-import 'datejs';
 
 if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator){
   // Inject service worker
@@ -22,7 +21,7 @@ Vue.use(VueVisibility);
 Vue.use(VueTimers);
 
 Vue.prototype.$covid = {
-  build: Date.today().toString("yyyyMMdd")
+  build: "2020081400"
 }
 
 new Vue({
