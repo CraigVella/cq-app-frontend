@@ -8,6 +8,7 @@ import VueVisibility from 'vue-visibility-change';
 import VueTimers from 'vue-timers';
 
 import CQApp from './CQApp.vue';
+import 'datejs';
 
 if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator){
   // Inject service worker
@@ -20,9 +21,13 @@ Vue.use(Buefy);
 Vue.use(VueVisibility);
 Vue.use(VueTimers);
 
+Vue.prototype.$covid = {
+  build: Date.today().toString("yyyyMMdd")
+}
+
 new Vue({
   render: r => r(CQApp),
   metaInfo: {
-    titleTemplate: 'Malverne Covid 19 Questionnaire%s'
-}
+      titleTemplate: 'Malverne Covid 19 Questionnaire%s'
+  }
 }).$mount('#app');

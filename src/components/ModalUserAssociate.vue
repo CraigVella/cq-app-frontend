@@ -28,6 +28,7 @@
             </div>
         </div>
         <div class="covid-image"></div>
+        <div class="version">{{$covid.build}}</div>
     </div>
 </template>
 
@@ -94,6 +95,13 @@ export default {
     transform: translateY(60%);
     bottom: 0;
     z-index: 0;
+}
+
+.version {
+    position: absolute;
+    bottom: 0;
+    right: 2px;
+    font-size: 10px;
 }
 
 .logon-box {

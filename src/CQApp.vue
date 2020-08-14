@@ -12,8 +12,8 @@
         <div class='add-user-button' v-if='allowAddStudent && !inKioskMode'>
             <b-button icon-left="account" type='is-success' @click="addUserClick()">Add additional account</b-button>
         </div>
-        <div class='add-user-button' v-if='inKioskMode'>
-            <b-button icon-left="cancel" type='is-danger' @click="cancelKioskSurvey()">{{cancelSurveyString}}</b-button>
+        <div class='add-cancel-button' v-if='inKioskMode'>
+            <b-button icon-left="cancel" type='is-danger' @click="cancelKioskSurvey(true)">{{cancelSurveyString}}</b-button>
         </div>
     </div>
     <Scanner v-else></Scanner>
@@ -76,17 +76,38 @@ export default {
             --this.cancelSurveyTimer;
             if (this.cancelSurveyTimer < 0) {
                 this.$timer.stop('cancelSurveyTick');
-                this.cancelKioskSurvey();
+                this.cancelKioskSurvey(false);
             }
         },
-        cancelKioskSurvey() {
-            this.users = [];
-            this.$refs.survey.clearKiosk();
-            usObj.destroyKioskTempToken();
-            this.checkIfShowAddUser();
+        cancelKioskSurvey(warn) {
             this.$timer.stop('cancelSurveyTick');
-            this.cancelSurveyTimer = CANCEL_SURVEY_TIME;
-            this.cancelSurveyString = CANCEL_SURVEY_STRING;
+
+            if (warn) {
+                this.showSurveyCancelWarning();
+            } else {
+                this.users = [];
+                this.$refs.survey.clearKiosk();
+                usObj.destroyKioskTempToken();
+                this.checkIfShowAddUser();
+                this.cancelSurveyTimer = CANCEL_SURVEY_TIME;
+                this.cancelSurveyString = CANCEL_SURVEY_STRING;
+            }
+        },
+        showSurveyCancelWarning() {
+            this.$buefy.dialog.confirm({
+                title: 'Cancel Survey',
+                message: 'Are you sure you want to Cancel this survey?',
+                confirmText: 'Yes',
+                cancelText: 'No',
+                type: 'is-danger',
+                hasIcon: true,
+                onConfirm: () => {
+                    this.cancelKioskSurvey(false);
+                },
+                onCancel: () => {
+                    this.$timer.start('cancelSurveyTick');
+                }
+            });
         },
         reloadUserList() {
             return usObj.getUserList().then((r) => {
@@ -183,6 +204,15 @@ body {
     height: 50px;
     text-align: right;
     padding-right: 15px;
+    padding-top: 60px;
+    padding-bottom: 60px;
+}
+
+.add-cancel-button {
+    width: 100%;
+    height: 50px;
+    text-align: left;
+    padding-left: 15px;
     padding-top: 60px;
     padding-bottom: 60px;
 }
