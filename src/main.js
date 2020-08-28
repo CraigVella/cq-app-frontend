@@ -21,7 +21,7 @@ Vue.use(VueVisibility);
 Vue.use(VueTimers);
 
 Vue.prototype.$covid = {
-  build: "2020081400"
+  build: "2020082800"
 }
 
 new Vue({

@@ -9,7 +9,8 @@ class UserSystem {
         devicetoken: null,
         mode: 'standalone',
         location: 'NO-LOCATION-SET',
-        kiosk_temptoken: null
+        kiosk_temptoken: null,
+        scan_security: false
     };
 
      constructor() {
@@ -19,6 +20,7 @@ class UserSystem {
      readCookieData() {
         this.#CQData.mode = Cookie.get('mode') || this.#CQData.mode;
         this.#CQData.location = Cookie.get('location') || this.#CQData.location;
+        this.#CQData.scan_security = Cookie.get('security') || false;
         if (this.#CQData.mode.toUpperCase() === 'KIOSK') {
             Cookie.remove('devicetoken');
             this.#CQData.kiosk_temptoken = Cookie.get('kiosk_temptoken');
@@ -34,6 +36,10 @@ class UserSystem {
 
      inScanMode() {
          return this.#CQData.mode.toUpperCase() === 'SCAN';
+     }
+
+     isScanSecurity() {
+         return this.#CQData.scan_security.toUpperCase() === 'TRUE';
      }
 
      inKioskMode() {
@@ -147,6 +153,7 @@ class UserSystem {
          resultQuery.append('action', 'GET_RESULT');
          resultQuery.append('uid', uid);
          resultQuery.append('visitor', isVisitor);
+         resultQuery.append('location', this.getKioskLocation());
          return new Promise((res) => {
             Axios.post(UserSystem_API, resultQuery).then((r) =>{
                 res(r.data);

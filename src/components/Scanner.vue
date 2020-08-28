@@ -25,6 +25,9 @@
 
 <script>
 import UserSystem from '../lib/UserSystem.js';
+import SuccessSound from '../assets/success.mp3';
+import FailSound from '../assets/fail.mp3';
+
 const SCANNER_AUTO_CLOSE   = 10;
 
 let usObj = new UserSystem();
@@ -50,7 +53,11 @@ export default {
                 }
             },
             scanResultShown: false,
-            showTextInput: false
+            showTextInput: false,
+            audio: {
+                success: new Audio(SuccessSound),
+                failed: new Audio(FailSound)
+            }
         }
     },
     timers: {
@@ -73,6 +80,7 @@ export default {
             this.keyBuffer = '';
         },
         showResults() {
+            this.playResultAudio();
             this.scanResultShown = true;
             this.scannerAutoCloseTimer = SCANNER_AUTO_CLOSE;
             this.$timer.start('scannerAutoClose');
@@ -90,6 +98,18 @@ export default {
         validateEmail(email) {
             const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
             return re.test(String(email).toLowerCase());
+        },
+        playResultAudio() {
+            if ((this.lastScanResult.data.user.hascompletedtoday && this.lastScanResult.data.user.passed)) {
+                // success
+                this.audio.success.play();
+            } else if ((this.lastScanResult.data.user.hascompletedtoday && !this.lastScanResult.data.user.passed)) {
+                // has failed
+                this.audio.failed.play();
+            } else if(!this.lastScanResult.data.user.hascompletedtoday) {
+                // has not taken today
+                this.audio.failed.play();
+            }
         }
     },
     mounted() {
@@ -106,7 +126,7 @@ export default {
                 this.submit();
             }
         });
-        this.showTextInput = usObj.getKioskLocation().toUpperCase() === 'SECURITY';
+        this.showTextInput = usObj.isScanSecurity();
     }
 }
 </script>
