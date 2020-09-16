@@ -76,7 +76,7 @@ export default {
     data() {
         return {
             questions: [
-                { question: "Have you knowingly been in close or proximate contact in the past 14 days with anyone who has tested positive for COVID-19 or who has or had symptoms of COVID-19?" },
+                { question: "Have you knowingly been in close contact in the past 14 days with anyone who has tested positive for COVID-19 or who has or had symptoms of COVID-19?" },
                 { question: "Have you tested positive for COVID-19 in the past 14 days?" },
                 { question: "Have you experienced any symptoms of COVID-19 in the past 14 days?" }
             ],
